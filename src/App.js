@@ -57,7 +57,7 @@ function App() {
         ctx.beginPath()
         ctx.moveTo(mod + (tileSize * x1), mod + (tileSize * y1))
         ctx.lineTo(mod + (tileSize * x2), mod + (tileSize * y2))
-        ctx.lineWidth = 15
+        ctx.lineWidth = 5
         ctx.lineCap = 'round'
         ctx.strokeStyle = 'green'
         ctx.stroke()
