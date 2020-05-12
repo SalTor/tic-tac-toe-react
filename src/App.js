@@ -156,6 +156,13 @@ function App() {
                     </div>
                 ))}
             </div>
+
+            <button style={{marginTop: 100}} type="button" onClick={() => {
+                sessionStorage.clear()
+                window.location.reload()
+            }}>
+                Clear History
+            </button>
         </div>
     );
 }
