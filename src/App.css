@@ -34,6 +34,7 @@ nav h3 {
     display: grid;
     grid-template-rows: repeat(var(--grid-size), 100px);
     grid-row-gap: 1px;
+    position: relative;
 }
 
 .grid__row {

@@ -28,6 +28,7 @@ const useSessionStorageState = (initialState, stateId) => {
 
 function App() {
     const gridRef = useRef()
+    const canvasRef = useRef()
     const [grid, updateGrid] = useState(initialGrid)
     const [player, changePlayer] = useSessionStorageState('A', 'playerTurn')
     const [rowCount, trackRow] = useState(initialRowCount)
@@ -45,16 +46,34 @@ function App() {
         gridRef.current.style.setProperty('--grid-size', size)
     }, [])
 
+    const drawWinningPath = (coords) => {
+        const [[y1, x1], [y2, x2]] = coords
+        const tileSize = gridRef.current.children[0].children[0].clientHeight
+        const c = canvasRef.current
+        c.height = gridRef.current.clientHeight
+        c.width = gridRef.current.clientWidth
+        const mod = tileSize / 2
+        const ctx = c.getContext("2d")
+        ctx.beginPath()
+        ctx.moveTo(mod + (tileSize * x1), mod + (tileSize * y1))
+        ctx.lineTo(mod + (tileSize * x2), mod + (tileSize * y2))
+        ctx.lineWidth = 15
+        ctx.lineCap = 'round'
+        ctx.strokeStyle = 'green'
+        ctx.stroke()
+    }
+
     const move = (row, col) => {
         const val = player === 'A' ? 1 : -1
-        let newWinner = false
+        let newWinner = null
 
         const gridCopy = grid.slice().map(originalRow => originalRow.slice())
         gridCopy[row][col] = player === 'A' ? 'X' : 'O'
         updateGrid(gridCopy)
 
-        const wins = val => {
+        const wins = (val, start, end) => {
             if (!newWinner && Math.abs(val) === size) {
+                drawWinningPath([start, end])
                 newWinner = true
             }
         }
@@ -62,23 +81,23 @@ function App() {
         const rowCopy = rowCount.slice()
         rowCopy[row] += val
         trackRow(rowCopy)
-        wins(rowCopy[row])
+        wins(rowCopy[row], [row, 0], [row, size - 1])
 
         const colCopy = colCount.slice()
         colCopy[col] += val
         trackCol(colCopy)
-        wins(colCopy[col])
+        wins(colCopy[col], [0, col], [size - 1, col])
 
         if (row === col) {
             const diagLCt = diagL + val
             trackDiagL(diagLCt)
-            wins(diagLCt)
+            wins(diagLCt, [0, 0], [size - 1, size - 1])
         }
 
         if (row === size - col - 1) {
             const diagRCt = diagR + val
             trackDiagR(diagRCt)
-            wins(diagRCt)
+            wins(diagRCt, [0, size - 1], [size - 1, 0])
         }
 
         if (newWinner) {
@@ -160,6 +179,11 @@ function App() {
                             })}
                         </div>
                     ))}
+
+                    <canvas
+                        ref={canvasRef}
+                        style={{ display: winner ? 'inline' : 'none', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                    />
                 </div>
             </div>
 
