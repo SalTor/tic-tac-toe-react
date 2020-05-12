@@ -29,7 +29,7 @@ const useSessionStorageState = (initialState, stateId) => {
 
 function App() {
     const [grid, updateGrid] = useState(initialGrid)
-    const [player, changePlayer] = useSessionStorageState('1', 'playerTurn')
+    const [player, changePlayer] = useSessionStorageState('A', 'playerTurn')
     const [rowCount, trackRow] = useState(initialRowCount)
     const [colCount, trackCol] = useState(initialColCount)
     const [diagL, trackDiagL] = useState(0)
@@ -37,20 +37,21 @@ function App() {
     const [winner, trackWinner] = useState(null)
     const [moves, trackMoves] = useState(0)
     const [stalemate, trackStalemate] = useState(false)
-    const [player1Wins, trackPlayer1Wins] = useSessionStorageState(0, 'player1Wins')
-    const [player2Wins, trackPlayer2Wins] = useSessionStorageState(0, 'player2Wins')
+    const [stalemateCount, trackStalemateCounts] = useSessionStorageState(0, 'playersStalemates')
+    const [playerAWins, trackPlayerAWins] = useSessionStorageState(0, 'playerAWins')
+    const [playerBWins, trackPlayerBWins] = useSessionStorageState(0, 'playerBWins')
 
     const move = (row, col) => {
-        const val = player === '1' ? 1 : -1
-        let newWinner
+        const val = player === 'A' ? 1 : -1
+        let newWinner = false
 
         const gridCopy = grid.slice().map(originalRow => originalRow.slice())
-        gridCopy[row][col] = player === '1' ? 'X' : 'O'
+        gridCopy[row][col] = player === 'A' ? 'X' : 'O'
         updateGrid(gridCopy)
 
         const wins = val => {
             if (!newWinner && Math.abs(val) === size) {
-                newWinner = player
+                newWinner = true
             }
         }
 
@@ -77,25 +78,25 @@ function App() {
         }
 
         if (newWinner) {
-            if (player === '1') {
-                trackPlayer1Wins(player1Wins + 1)
-                changePlayer('1')
+            if (player === 'A') {
+                trackPlayerAWins(playerAWins + 1)
+                changePlayer('A')
             } else {
-                trackPlayer2Wins(player2Wins + 1)
-                changePlayer('2')
+                trackPlayerBWins(playerBWins + 1)
+                changePlayer('B')
             }
-            trackWinner(newWinner)
+            trackWinner(player)
         } else {
-            if (player === '1') {
-                changePlayer('2')
+            if (moves + 1 === sizeSq) {
+                trackStalemate(true)
+                trackStalemateCounts(stalemateCount + 1)
+            } else if (player === 'A') {
+                changePlayer('B')
             } else {
-                changePlayer('1')
+                changePlayer('A')
             }
         }
 
-        if (moves + 1 === sizeSq) {
-            trackStalemate(true)
-        }
         trackMoves(moves + 1)
     }
 
@@ -112,16 +113,19 @@ function App() {
 
     return (
         <div className="App">
+            <nav style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <h3 style={{padding: 5, background: 'blue', color: 'white', marginRight: 10}}>Player A: {playerAWins}</h3>
+                <h3 style={{padding: 5, background: 'blue', color: 'white', marginRight: 10}}>Player B: {playerBWins}</h3>
+                <h3 style={{padding: 5, background: 'blue', color: 'white'}}>Stalemates: {stalemateCount}</h3>
+            </nav>
+
             <header>
                 <h1>Tic Tac Toe</h1>
                 {(winner || stalemate) && <button type="button" onClick={resetGame}>Reset Game</button>}
             </header>
 
-            <h3>Player 1 wins: {player1Wins}</h3>
-            <h3>Player 2 wins: {player2Wins}</h3>
-
             {winner ? (
-                <h2>Winner is: {winner}</h2>
+                <h2>Winner is: Player {winner}</h2>
             ) : (
                 stalemate ? (
                     <h2>Stalemate!</h2>
