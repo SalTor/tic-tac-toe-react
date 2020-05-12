@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 const size = 3
@@ -113,10 +112,10 @@ function App() {
 
     return (
         <div className="App">
-            <nav style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                <h3 style={{padding: 5, background: 'blue', color: 'white', marginRight: 10}}>Player A: {playerAWins}</h3>
-                <h3 style={{padding: 5, background: 'blue', color: 'white', marginRight: 10}}>Player B: {playerBWins}</h3>
-                <h3 style={{padding: 5, background: 'blue', color: 'white'}}>Stalemates: {stalemateCount}</h3>
+            <nav>
+                <h3>Player A: {playerAWins}</h3>
+                <h3>Player B: {playerBWins}</h3>
+                <h3>Stalemates: {stalemateCount}</h3>
             </nav>
 
             <header>
@@ -141,16 +140,16 @@ function App() {
                             const val = grid[rowIndex][colIndex]
                             const hasVal = val !== 0
                             const disabled = winner || hasVal
-                            const tileSize = 30
                             return (
                                 <button
-                                    className="grid__tile"
-                                    style={{height: tileSize, width: tileSize}}
+                                    className={`grid__tile ${hasVal ? 'm_hasVal' : 'm_noVal'}`}
                                     disabled={disabled}
                                     onClick={() => disabled || move(rowIndex, colIndex)}
                                     key={`tile_${rowIndex}${colIndex}`}
                                     type="button"
-                                >{val || '-'}</button>
+                                >
+                                    <span>{val || ' '}</span>
+                                </button>
                             )
                         })}
                     </div>
