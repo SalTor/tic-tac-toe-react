@@ -23,19 +23,22 @@ nav h3 {
     color: white;
 }
 
+.gridWrapper {
+    display: flex;
+    justify-content: center;
+}
+
 .grid {
+    --grid-size: 3;
     background: black;
-    margin: 0 auto;
-    height: 200px;
-    width: 200px;
     display: grid;
-    grid-template-rows: repeat(3, 33%);
+    grid-template-rows: repeat(var(--grid-size), 100px);
     grid-row-gap: 1px;
 }
 
 .grid__row {
     display: grid;
-    grid-template-columns: repeat(3, 33%);
+    grid-template-columns: repeat(var(--grid-size), 100px);
     grid-column-gap: 1px;
 }
 

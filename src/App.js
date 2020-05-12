@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const size = 3
-const sizeSq = 3*3
+const sizeSq = size*size
 const initialGrid = Array(size).fill(Array(size).fill(0))
 const initialRowCount = Array(size).fill(0)
 const initialColCount = Array(size).fill(0)
@@ -27,6 +27,7 @@ const useSessionStorageState = (initialState, stateId) => {
 }
 
 function App() {
+    const gridRef = useRef()
     const [grid, updateGrid] = useState(initialGrid)
     const [player, changePlayer] = useSessionStorageState('A', 'playerTurn')
     const [rowCount, trackRow] = useState(initialRowCount)
@@ -39,6 +40,10 @@ function App() {
     const [stalemateCount, trackStalemateCounts] = useSessionStorageState(0, 'playersStalemates')
     const [playerAWins, trackPlayerAWins] = useSessionStorageState(0, 'playerAWins')
     const [playerBWins, trackPlayerBWins] = useSessionStorageState(0, 'playerBWins')
+
+    useEffect(() => {
+        gridRef.current.style.setProperty('--grid-size', size)
+    }, [])
 
     const move = (row, col) => {
         const val = player === 'A' ? 1 : -1
@@ -133,27 +138,29 @@ function App() {
                 )
             )}
 
-            <div className="grid">
-                {grid.map((row, rowIndex) => (
-                    <div className="grid__row" key={`row_${rowIndex}`}>
-                        {grid[rowIndex].map((col, colIndex) => {
-                            const val = grid[rowIndex][colIndex]
-                            const hasVal = val !== 0
-                            const disabled = winner || hasVal
-                            return (
-                                <button
-                                    className={`grid__tile ${hasVal ? 'm_hasVal' : 'm_noVal'}`}
-                                    disabled={disabled}
-                                    onClick={() => disabled || move(rowIndex, colIndex)}
-                                    key={`tile_${rowIndex}${colIndex}`}
-                                    type="button"
-                                >
-                                    <span>{val || ' '}</span>
-                                </button>
-                            )
-                        })}
-                    </div>
-                ))}
+            <div className="gridWrapper">
+                <div className="grid" ref={gridRef}>
+                    {grid.map((row, rowIndex) => (
+                        <div className="grid__row" key={`row_${rowIndex}`}>
+                            {grid[rowIndex].map((col, colIndex) => {
+                                const val = grid[rowIndex][colIndex]
+                                const hasVal = val !== 0
+                                const disabled = winner || hasVal
+                                return (
+                                    <button
+                                        className={`grid__tile ${hasVal ? 'm_hasVal' : 'm_noVal'}`}
+                                        disabled={disabled}
+                                        onClick={() => disabled || move(rowIndex, colIndex)}
+                                        key={`tile_${rowIndex}${colIndex}`}
+                                        type="button"
+                                    >
+                                        <span>{val || ' '}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <button style={{marginTop: 100}} type="button" onClick={() => {
