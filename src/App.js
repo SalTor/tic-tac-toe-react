@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
 const size = 3
 const sizeSq = 3*3
 const initialGrid = Array(size).fill(Array(size).fill(0))
+const initialRowCount = Array(size).fill(0)
+const initialColCount = Array(size).fill(0)
 /*
     [
         [0, 0, 0],
@@ -13,16 +15,30 @@ const initialGrid = Array(size).fill(Array(size).fill(0))
     ]
 */
 
+const useSessionStorageState = (initialState, stateId) => {
+    const existingState = JSON.parse(sessionStorage.getItem(stateId))
+    const [state, setState] = useState(existingState || initialState)
+
+    // Persist all formState changes to localStorage
+    useEffect(() => {
+        sessionStorage.setItem(stateId, JSON.stringify(state))
+    }, [state, stateId])
+
+    return [state, setState]
+}
+
 function App() {
     const [grid, updateGrid] = useState(initialGrid)
-    const [player, changePlayer] = useState('1')
-    const [rowCount, trackRow] = useState(Array(size).fill(0))
-    const [colCount, trackCol] = useState(Array(size).fill(0))
+    const [player, changePlayer] = useSessionStorageState('1', 'playerTurn')
+    const [rowCount, trackRow] = useState(initialRowCount)
+    const [colCount, trackCol] = useState(initialColCount)
     const [diagL, trackDiagL] = useState(0)
     const [diagR, trackDiagR] = useState(0)
     const [winner, trackWinner] = useState(null)
     const [moves, trackMoves] = useState(0)
     const [stalemate, trackStalemate] = useState(false)
+    const [player1Wins, trackPlayer1Wins] = useSessionStorageState(0, 'player1Wins')
+    const [player2Wins, trackPlayer2Wins] = useSessionStorageState(0, 'player2Wins')
 
     const move = (row, col) => {
         const val = player === '1' ? 1 : -1
@@ -60,12 +76,21 @@ function App() {
             wins(diagRCt)
         }
 
-        if (newWinner) trackWinner(newWinner)
-
-        if (player === '1') {
-            changePlayer('2')
+        if (newWinner) {
+            if (player === '1') {
+                trackPlayer1Wins(player1Wins + 1)
+                changePlayer('1')
+            } else {
+                trackPlayer2Wins(player2Wins + 1)
+                changePlayer('2')
+            }
+            trackWinner(newWinner)
         } else {
-            changePlayer('1')
+            if (player === '1') {
+                changePlayer('2')
+            } else {
+                changePlayer('1')
+            }
         }
 
         if (moves + 1 === sizeSq) {
@@ -75,7 +100,14 @@ function App() {
     }
 
     const resetGame = () => {
-        console.log('TODO: reset game')
+        updateGrid(initialGrid)
+        trackRow(initialRowCount)
+        trackCol(initialColCount)
+        trackDiagL(0)
+        trackDiagR(0)
+        trackWinner(null)
+        trackMoves(0)
+        trackStalemate(false)
     }
 
     return (
@@ -84,6 +116,9 @@ function App() {
                 <h1>Tic Tac Toe</h1>
                 {(winner || stalemate) && <button type="button" onClick={resetGame}>Reset Game</button>}
             </header>
+
+            <h3>Player 1 wins: {player1Wins}</h3>
+            <h3>Player 2 wins: {player2Wins}</h3>
 
             {winner ? (
                 <h2>Winner is: {winner}</h2>
@@ -111,7 +146,7 @@ function App() {
                                     onClick={() => disabled || move(rowIndex, colIndex)}
                                     key={`tile_${rowIndex}${colIndex}`}
                                     type="button"
-                                >{val || ' '}</button>
+                                >{val || '-'}</button>
                             )
                         })}
                     </div>
